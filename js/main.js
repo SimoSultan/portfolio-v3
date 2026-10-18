@@ -2,9 +2,12 @@
   const state = {
     expandedId: null,
     mediumId: null,
+    smallId: null,
+    currentLayout: null,
   };
 
   let resizeTimeout;
+  let lastBreakpoint = portfolioLayouts.getBreakpoint();
 
   function applyCurrentLayout(animate = true) {
     const breakpoint = portfolioLayouts.getBreakpoint();
@@ -18,21 +21,29 @@
   }
 
   function expandCard(id) {
+    const breakpoint = portfolioLayouts.getBreakpoint();
     if (state.expandedId === id) {
       state.expandedId = null;
       state.mediumId = null;
+      state.smallId = null;
+      state.currentLayout = null;
     } else {
+      const baseLayout = portfolioLayouts.getLayoutForState(breakpoint, state);
       state.expandedId = id;
       state.mediumId = null;
+      state.smallId = null;
+      state.currentLayout = portfolioLayouts.generateExpandedLayout(breakpoint, id, baseLayout);
     }
     updateStates();
     applyCurrentLayout(true);
   }
 
   function collapseCard(id) {
-    if (state.expandedId === id || state.mediumId === id) {
+    if (state.expandedId === id || state.mediumId === id || state.smallId === id) {
       state.expandedId = null;
       state.mediumId = null;
+      state.smallId = null;
+      state.currentLayout = null;
       updateStates();
       applyCurrentLayout(true);
     }
@@ -87,6 +98,11 @@
     window.addEventListener('resize', () => {
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(() => {
+        const breakpoint = portfolioLayouts.getBreakpoint();
+        if (breakpoint !== lastBreakpoint) {
+          state.currentLayout = null;
+          lastBreakpoint = breakpoint;
+        }
         applyCurrentLayout(false);
       }, 150);
     });

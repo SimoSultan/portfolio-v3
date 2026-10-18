@@ -28,6 +28,14 @@ const layouts = {
   },
 };
 
+const cardSizes = {
+  hero: ['small', 'resting', 'medium', 'expanded'],
+  contact: ['small', 'resting', 'medium', 'expanded'],
+  about: ['resting', 'medium', 'expanded'],
+  projects: ['resting', 'medium', 'expanded'],
+  experience: ['resting', 'medium', 'expanded'],
+};
+
 const snapSizes = ['resting', 'medium', 'expanded'];
 
 function getBreakpoint() {
@@ -45,6 +53,181 @@ function cloneLayout(layout) {
   return clone;
 }
 
+function getCells(box) {
+  const cells = new Set();
+  for (let c = box.gc; c < box.gc + box.gcs; c++) {
+    for (let r = box.gr; r < box.gr + box.grs; r++) {
+      cells.add(`${c},${r}`);
+    }
+  }
+  return cells;
+}
+
+function boxFromCells(cells) {
+  if (cells.size === 0) return null;
+  let minC = Infinity;
+  let maxC = -Infinity;
+  let minR = Infinity;
+  let maxR = -Infinity;
+  cells.forEach((key) => {
+    const [c, r] = key.split(',').map(Number);
+    minC = Math.min(minC, c);
+    maxC = Math.max(maxC, c);
+    minR = Math.min(minR, r);
+    maxR = Math.max(maxR, r);
+  });
+  const width = maxC - minC + 1;
+  const height = maxR - minR + 1;
+  if (width * height !== cells.size) return null;
+  return { gc: minC, gcs: width, gr: minR, grs: height };
+}
+
+function findOwner(layout, cellKey, excludeId) {
+  for (const id in layout) {
+    if (id === excludeId) continue;
+    const box = layout[id];
+    const [c, r] = cellKey.split(',').map(Number);
+    if (c >= box.gc && c < box.gc + box.gcs && r >= box.gr && r < box.gr + box.grs) {
+      return id;
+    }
+  }
+  return null;
+}
+
+function isValidLayout(layout) {
+  const cells = new Set();
+  let totalArea = 0;
+  let maxC = 0;
+  let maxR = 0;
+  for (const id in layout) {
+    const box = layout[id];
+    if (box.gcs < 1 || box.grs < 1) return false;
+    totalArea += box.gcs * box.grs;
+    maxC = Math.max(maxC, box.gc + box.gcs - 1);
+    maxR = Math.max(maxR, box.gr + box.grs - 1);
+    for (let c = box.gc; c < box.gc + box.gcs; c++) {
+      for (let r = box.gr; r < box.gr + box.grs; r++) {
+        const key = `${c},${r}`;
+        if (cells.has(key)) return false;
+        cells.add(key);
+      }
+    }
+  }
+  const expectedArea = maxC * maxR;
+  return cells.size === expectedArea && totalArea === expectedArea;
+}
+
+function getCandidateSubsets(baseBox, lostCells) {
+  const cells = [...lostCells];
+  const subsets = [new Set()];
+  const total = cells.length;
+  for (let mask = 1; mask < 1 << total; mask++) {
+    const subset = new Set();
+    for (let i = 0; i < total; i++) {
+      if (mask & (1 << i)) subset.add(cells[i]);
+    }
+    const combined = getCells(baseBox);
+    subset.forEach((c) => combined.add(c));
+    if (boxFromCells(combined)) subsets.push(subset);
+  }
+  return subsets;
+}
+
+function findShrinkAssignment(layout, cardId, lostCells) {
+  const otherIds = Object.keys(layout).filter((id) => id !== cardId);
+  const remaining = new Set(lostCells);
+  const assignment = {};
+
+  function backtrack(index) {
+    if (remaining.size === 0) return true;
+    if (index >= otherIds.length) return false;
+
+    const id = otherIds[index];
+    const candidates = getCandidateSubsets(layout[id], remaining);
+
+    for (const subset of candidates) {
+      assignment[id] = subset;
+      subset.forEach((c) => remaining.delete(c));
+      if (backtrack(index + 1)) return true;
+      subset.forEach((c) => remaining.add(c));
+    }
+
+    delete assignment[id];
+    return false;
+  }
+
+  if (!backtrack(0)) return null;
+  return assignment;
+}
+
+function applyLocalResize(layout, cardId, direction, grow) {
+  const current = layout[cardId];
+  const next = { ...current };
+
+  if (direction === 'e') {
+    next.gcs += grow ? 1 : -1;
+  } else if (direction === 'w') {
+    if (grow) {
+      next.gc -= 1;
+      next.gcs += 1;
+    } else {
+      next.gc += 1;
+      next.gcs -= 1;
+    }
+  } else if (direction === 's') {
+    next.grs += grow ? 1 : -1;
+  } else if (direction === 'n') {
+    if (grow) {
+      next.gr -= 1;
+      next.grs += 1;
+    } else {
+      next.gr += 1;
+      next.grs -= 1;
+    }
+  }
+
+  if (next.gcs < 1 || next.grs < 1) return null;
+
+  const oldCells = getCells(current);
+  const newCells = getCells(next);
+  const gained = new Set([...newCells].filter((c) => !oldCells.has(c)));
+  const lost = new Set([...oldCells].filter((c) => !newCells.has(c)));
+
+  const nextLayout = cloneLayout(layout);
+  nextLayout[cardId] = next;
+
+  if (grow) {
+    const deltas = {};
+    for (const cell of gained) {
+      const owner = findOwner(layout, cell, cardId);
+      if (!owner) return null;
+      if (!deltas[owner]) deltas[owner] = new Set();
+      deltas[owner].add(cell);
+    }
+    for (const id in deltas) {
+      const remaining = getCells(layout[id]);
+      for (const cell of deltas[id]) remaining.delete(cell);
+      const box = boxFromCells(remaining);
+      if (!box) return null;
+      nextLayout[id] = box;
+    }
+  } else {
+    const assignment = findShrinkAssignment(layout, cardId, lost);
+    if (!assignment) return null;
+    for (const id in assignment) {
+      const subset = assignment[id];
+      if (subset.size === 0) continue;
+      const combined = getCells(layout[id]);
+      subset.forEach((c) => combined.add(c));
+      const box = boxFromCells(combined);
+      if (!box) return null;
+      nextLayout[id] = box;
+    }
+  }
+
+  return isValidLayout(nextLayout) ? nextLayout : null;
+}
+
 function getMaxRow(layout) {
   let max = 0;
   for (const id in layout) {
@@ -54,44 +237,168 @@ function getMaxRow(layout) {
   return max;
 }
 
-function generateExpandedLayout(breakpoint, cardId) {
-  const base = cloneLayout(layouts[breakpoint].resting);
+function getDesktopAnchor(box) {
+  const centerC = box.gc + (box.gcs - 1) / 2;
+  const centerR = box.gr + (box.grs - 1) / 2;
+  return {
+    horizontal: centerC <= 2.5 ? 'left' : 'right',
+    vertical: centerR <= 2 ? 'top' : 'bottom',
+  };
+}
 
+function boxCenter(box) {
+  return {
+    c: box.gc + (box.gcs - 1) / 2,
+    r: box.gr + (box.grs - 1) / 2,
+  };
+}
+
+function assignSlots(cards, slots) {
+  const used = new Set();
+  const assignment = {};
+
+  cards.forEach((card) => {
+    const cc = boxCenter(card.box);
+    let bestIndex = -1;
+    let bestDist = Infinity;
+
+    slots.forEach((slot, i) => {
+      if (used.has(i)) return;
+      const sc = boxCenter(slot.box);
+      const dist = (cc.c - sc.c) ** 2 + (cc.r - sc.r) ** 2;
+      if (dist < bestDist) {
+        bestDist = dist;
+        bestIndex = i;
+      }
+    });
+
+    assignment[card.id] = slots[bestIndex].box;
+    used.add(bestIndex);
+  });
+
+  return assignment;
+}
+
+const desktopExpandedTemplates = {
+  topleft: {
+    expanded: { gc: 1, gcs: 3, gr: 1, grs: 2 },
+    slots: [
+      { box: { gc: 4, gcs: 1, gr: 1, grs: 1 } },
+      { box: { gc: 4, gcs: 1, gr: 2, grs: 1 } },
+      { box: { gc: 1, gcs: 3, gr: 3, grs: 1 } },
+      { box: { gc: 4, gcs: 1, gr: 3, grs: 1 } },
+    ],
+  },
+  topright: {
+    expanded: { gc: 2, gcs: 3, gr: 1, grs: 2 },
+    slots: [
+      { box: { gc: 1, gcs: 1, gr: 1, grs: 1 } },
+      { box: { gc: 1, gcs: 1, gr: 2, grs: 1 } },
+      { box: { gc: 2, gcs: 3, gr: 3, grs: 1 } },
+      { box: { gc: 1, gcs: 1, gr: 3, grs: 1 } },
+    ],
+  },
+  bottomleft: {
+    expanded: { gc: 1, gcs: 3, gr: 2, grs: 2 },
+    slots: [
+      { box: { gc: 4, gcs: 1, gr: 2, grs: 1 } },
+      { box: { gc: 4, gcs: 1, gr: 3, grs: 1 } },
+      { box: { gc: 1, gcs: 3, gr: 1, grs: 1 } },
+      { box: { gc: 4, gcs: 1, gr: 1, grs: 1 } },
+    ],
+  },
+  bottomright: {
+    expanded: { gc: 2, gcs: 3, gr: 2, grs: 2 },
+    slots: [
+      { box: { gc: 1, gcs: 1, gr: 2, grs: 1 } },
+      { box: { gc: 1, gcs: 1, gr: 3, grs: 1 } },
+      { box: { gc: 2, gcs: 3, gr: 1, grs: 1 } },
+      { box: { gc: 1, gcs: 1, gr: 1, grs: 1 } },
+    ],
+  },
+};
+
+
+
+function generateExpandedLayout(breakpoint, cardId, baseLayout = layouts[breakpoint].resting) {
   if (breakpoint === 'mobile') {
+    const layout = cloneLayout(layouts.mobile.resting);
     const order = ['hero', 'about', 'projects', 'experience', 'contact'];
     const index = order.indexOf(cardId);
-    base[cardId] = { gc: 1, gcs: 1, gr: index + 1, grs: 2 };
+    layout[cardId] = { gc: 1, gcs: 1, gr: index + 1, grs: 2 };
     let row = index + 3;
     for (let i = index + 1; i < order.length; i++) {
-      base[order[i]] = { gc: 1, gcs: 1, gr: row, grs: 1 };
+      layout[order[i]] = { gc: 1, gcs: 1, gr: row, grs: 1 };
       row += 1;
     }
-    return base;
+    return layout;
   }
 
   if (breakpoint === 'tablet') {
-    base[cardId] = { gc: 1, gcs: 2, gr: 1, grs: 2 };
-    const others = ['hero', 'about', 'projects', 'experience', 'contact'].filter((id) => id !== cardId);
-    base[others[0]] = { gc: 1, gcs: 2, gr: 3, grs: 1 };
-    base[others[1]] = { gc: 1, gcs: 2, gr: 4, grs: 1 };
-    base[others[2]] = { gc: 1, gcs: 1, gr: 5, grs: 1 };
-    base[others[3]] = { gc: 2, gcs: 1, gr: 5, grs: 1 };
-    return base;
+    // Tablet portrait expands like mobile: the clicked card becomes 2×2 at its
+    // current row and pushes the cards below it down.
+    const ids = Object.keys(baseLayout);
+    ids.sort((a, b) => {
+      const ab = baseLayout[a];
+      const bb = baseLayout[b];
+      if (ab.gr !== bb.gr) return ab.gr - bb.gr;
+      return ab.gc - bb.gc;
+    });
+
+    const index = ids.indexOf(cardId);
+    const layout = {};
+    let row = 1;
+
+    for (let i = 0; i < ids.length; i++) {
+      const id = ids[i];
+      if (i === index) {
+        layout[id] = { gc: 1, gcs: 2, gr: row, grs: 2 };
+        row += 2;
+      } else {
+        layout[id] = { gc: 1, gcs: 2, gr: row, grs: 1 };
+        row += 1;
+      }
+    }
+
+    return layout;
   }
 
-  // desktop: 4x3 grid, expanded card is 3x2, remaining cells filled with 1x1 and 3x1
-  base[cardId] = { gc: 1, gcs: 3, gr: 1, grs: 2 };
+  // desktop
   const others = ['hero', 'about', 'projects', 'experience', 'contact'].filter((id) => id !== cardId);
+  const otherCards = others.map((id) => ({ id, box: baseLayout[id] }));
+  const anchor = getDesktopAnchor(baseLayout[cardId]);
+  const key = `${anchor.vertical}${anchor.horizontal}`;
+  const template = desktopExpandedTemplates[key];
+  const assignment = assignSlots(otherCards, template.slots);
 
-  base[others[0]] = { gc: 4, gcs: 1, gr: 1, grs: 1 };
-  base[others[1]] = { gc: 4, gcs: 1, gr: 2, grs: 1 };
+  const layout = { [cardId]: template.expanded };
+  others.forEach((id) => {
+    layout[id] = assignment[id];
+  });
+  return layout;
+}
 
-  // Bottom row: one 1x1 and one 3x1
-  const bottomSmallId = others[2];
-  const bottomWideId = cardId === 'contact' ? others[3] : 'contact';
+function generateSmallLayout(breakpoint, cardId) {
+  // Small only applies to the full-width cards on desktop; elsewhere fall back to default.
+  if (breakpoint !== 'desktop' || (cardId !== 'hero' && cardId !== 'contact')) {
+    return cloneLayout(layouts[breakpoint].resting);
+  }
 
-  base[bottomSmallId] = { gc: 1, gcs: 1, gr: 3, grs: 1 };
-  base[bottomWideId] = { gc: 2, gcs: 3, gr: 3, grs: 1 };
+  const base = cloneLayout(layouts.desktop.resting);
+
+  if (cardId === 'hero') {
+    base.hero = { gc: 1, gcs: 2, gr: 1, grs: 1 };
+    base.about = { gc: 3, gcs: 2, gr: 1, grs: 1 };
+    base.projects = { gc: 1, gcs: 2, gr: 2, grs: 1 };
+    base.experience = { gc: 3, gcs: 2, gr: 2, grs: 1 };
+    base.contact = { gc: 1, gcs: 4, gr: 3, grs: 1 };
+  } else {
+    base.hero = { gc: 1, gcs: 4, gr: 1, grs: 1 };
+    base.about = { gc: 1, gcs: 2, gr: 2, grs: 1 };
+    base.projects = { gc: 3, gcs: 2, gr: 2, grs: 1 };
+    base.experience = { gc: 1, gcs: 2, gr: 3, grs: 1 };
+    base.contact = { gc: 3, gcs: 2, gr: 3, grs: 1 };
+  }
 
   return base;
 }
@@ -143,6 +450,7 @@ function generateMediumLayout(breakpoint, cardId) {
 function getLayoutForSize(breakpoint, cardId, size) {
   if (size === 'expanded') return generateExpandedLayout(breakpoint, cardId);
   if (size === 'medium') return generateMediumLayout(breakpoint, cardId);
+  if (size === 'small') return generateSmallLayout(breakpoint, cardId);
   return cloneLayout(layouts[breakpoint].resting);
 }
 
@@ -268,15 +576,24 @@ function applyLayout(layout, gridEl, animate = true) {
 }
 
 function getLayoutForState(breakpoint, cardState) {
-  const { expandedId, mediumId } = cardState;
+  if (cardState.currentLayout) {
+    return cloneLayout(cardState.currentLayout);
+  }
+  const { expandedId, mediumId, smallId } = cardState;
   if (expandedId) return generateExpandedLayout(breakpoint, expandedId);
   if (mediumId) return generateMediumLayout(breakpoint, mediumId);
+  if (smallId) return generateSmallLayout(breakpoint, smallId);
   return cloneLayout(layouts[breakpoint].resting);
+}
+
+function getCardSizes(cardId) {
+  return cardSizes[cardId] || snapSizes;
 }
 
 function getCardSize(cardState, cardId) {
   if (cardState.expandedId === cardId) return 'expanded';
   if (cardState.mediumId === cardId) return 'medium';
+  if (cardState.smallId === cardId) return 'small';
   return 'resting';
 }
 
@@ -284,12 +601,19 @@ function setCardSize(cardState, cardId, size) {
   if (size === 'expanded') {
     cardState.expandedId = cardId;
     cardState.mediumId = null;
+    cardState.smallId = null;
   } else if (size === 'medium') {
     cardState.expandedId = null;
     cardState.mediumId = cardId;
+    cardState.smallId = null;
+  } else if (size === 'small') {
+    cardState.expandedId = null;
+    cardState.mediumId = null;
+    cardState.smallId = cardId;
   } else {
     if (cardState.expandedId === cardId) cardState.expandedId = null;
     if (cardState.mediumId === cardId) cardState.mediumId = null;
+    if (cardState.smallId === cardId) cardState.smallId = null;
   }
 }
 
@@ -298,11 +622,15 @@ if (typeof window !== 'undefined') {
     getBreakpoint,
     getLayoutForState,
     getLayoutForSize,
+    getCardSizes,
     getCardSize,
     setCardSize,
     applyLayout,
     generateExpandedLayout,
     generateMediumLayout,
+    generateSmallLayout,
+    applyLocalResize,
+    isValidLayout,
     snapSizes,
     computeSharedEdges,
     renderResizeHandles,

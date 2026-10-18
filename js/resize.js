@@ -58,31 +58,33 @@ function initResize(gridEl, cardState, applyLayoutCallback, updateCardStatesCall
       shrink = dy > drag.threshold;
     }
 
-    const currentSize = portfolioLayouts.getCardSize(cardState, drag.cardId);
-    const currentSizeIndex = portfolioLayouts.snapSizes.indexOf(currentSize);
+    const growOrShrink = grow || shrink;
+    if (!growOrShrink) {
+      drag.handleEl.classList.remove('resize-handle--blocked');
+      return;
+    }
 
-    const canGrow = currentSizeIndex < portfolioLayouts.snapSizes.length - 1;
-    const canShrink = currentSizeIndex > 0;
+    const breakpoint = portfolioLayouts.getBreakpoint();
+    const layout = portfolioLayouts.getLayoutForState(breakpoint, cardState);
+    const nextLayout = portfolioLayouts.applyLocalResize(
+      layout,
+      drag.cardId,
+      drag.handle,
+      grow
+    );
 
-    if ((grow && !canGrow) || (shrink && !canShrink)) {
+    if (!nextLayout) {
       drag.handleEl.classList.add('resize-handle--blocked');
-    } else {
-      drag.handleEl.classList.remove('resize-handle--blocked');
+      return;
     }
 
-    if ((grow && canGrow) || (shrink && canShrink)) {
-      const nextSize = grow
-        ? portfolioLayouts.snapSizes[currentSizeIndex + 1]
-        : portfolioLayouts.snapSizes[currentSizeIndex - 1];
+    drag.handleEl.classList.remove('resize-handle--blocked');
+    cardState.currentLayout = nextLayout;
+    updateCardStatesCallback(cardState);
+    applyLayoutCallback();
 
-      portfolioLayouts.setCardSize(cardState, drag.cardId, nextSize);
-      updateCardStatesCallback(cardState);
-      applyLayoutCallback();
-
-      drag.startX = e.clientX;
-      drag.startY = e.clientY;
-      drag.handleEl.classList.remove('resize-handle--blocked');
-    }
+    drag.startX = e.clientX;
+    drag.startY = e.clientY;
   });
 
   window.addEventListener('mouseup', () => {
