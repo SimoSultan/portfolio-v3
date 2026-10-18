@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SimoSultan — Simon Curran</title>
+  <meta name="description" content="Portfolio of Simon Curran (SimoSultan), Software Consultant and Senior Frontend Engineer." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/grid.css" />
+  <link rel="stylesheet" href="css/cards.css" />
+</head>
+<body>
+  <main class="page" aria-label="Portfolio">
+    <section class="grid" id="grid" aria-label="Portfolio cards">
+      <!-- Cards are injected by JS -->
+    </section>
+    <noscript>
+      <p style="text-align:center;padding:2rem;font-family:var(--font-body);">
+        This portfolio requires JavaScript to display the interactive cards.
+        Please enable JavaScript, or email <a href="mailto:simosultan2020@gmail.com">simosultan2020@gmail.com</a>.
+      </p>
+    </noscript>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Flip.min.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/grid.js"></script>
+  <script src="js/cards.js"></script>
+  <script src="js/resize.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
