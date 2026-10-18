@@ -18,10 +18,12 @@ function renderHeroCard(data) {
       ${renderCloseIcon()}
       ${renderResizeHandleContainer()}
       <div class="card__content">
-        <div>
+        <div class="card__text">
           <span class="card__label">${data.tagline}</span>
           <h1 class="card__title">${data.name}</h1>
+          <span class="card__alias">${data.alias}</span>
         </div>
+        <img class="card__avatar" src="assets/avatar.png" alt="Portrait of Simon Curran" loading="lazy" />
         <div class="card__graphic" aria-hidden="true">
           <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
             <circle cx="60" cy="60" r="40" fill="rgba(17,17,17,0.08)" />
@@ -75,7 +77,14 @@ function renderProjectItem(item) {
 
   return `
     <li>
-      <h4>${item.name}</h4>
+      <div class="card__item-header">
+        <h4>${item.name}</h4>
+        <span class="card__item-arrow" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M5 12h14M12 5l7 7-7 7" />
+          </svg>
+        </span>
+      </div>
       <p>${item.what}</p>
       <div class="card__tags">${tags}</div>
       ${linksHtml}
@@ -84,8 +93,7 @@ function renderProjectItem(item) {
 }
 
 function renderProjectsCard(data) {
-  const withoutAI = data.withoutAI.map(renderProjectItem).join('');
-  const withAI = data.withAI.map(renderProjectItem).join('');
+  const items = [...data.withoutAI, ...data.withAI].map(renderProjectItem).join('');
 
   return `
     <article class="card card--projects" id="projects" tabindex="0" role="button" aria-label="Projects card, press Enter to expand">
@@ -96,16 +104,9 @@ function renderProjectsCard(data) {
           <span class="card__label">${data.label}</span>
           <h2 class="card__title">${data.title}</h2>
           <p class="card__summary">${data.summary}</p>
-          <div class="card__list">
-            <h3 class="card__group-heading">Without AI</h3>
-            <ul aria-label="Projects built without AI">
-              ${withoutAI}
-            </ul>
-            <h3 class="card__group-heading">With AI</h3>
-            <ul aria-label="Projects built with AI">
-              ${withAI}
-            </ul>
-          </div>
+          <ul class="card__list" aria-label="Selected projects">
+            ${items}
+          </ul>
         </div>
         <div class="card__actions">
           <button class="card__btn" data-action="expand" aria-label="View selected projects">
@@ -217,6 +218,8 @@ function updateCardStates(state) {
       cardState = 'expanded';
     } else if (state.mediumId === id) {
       cardState = 'medium';
+    } else if (state.smallId === id) {
+      cardState = 'small';
     }
     card.setAttribute('data-state', cardState);
     card.setAttribute('aria-expanded', String(cardState === 'expanded'));
