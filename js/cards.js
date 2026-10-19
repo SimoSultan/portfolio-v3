@@ -23,7 +23,7 @@ function renderHeroCard(data) {
           <h1 class="card__title">${data.name}</h1>
           <span class="card__alias">${data.alias}</span>
         </div>
-        <img class="card__avatar" src="assets/avatar.png" alt="${data.avatarAlt}" loading="lazy" />
+        <img class="card__avatar" src="assets/avatar.gif" alt="${data.avatarAlt}" loading="lazy" />
       </div>
     </article>
   `;

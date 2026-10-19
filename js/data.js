@@ -6,7 +6,7 @@ const portfolioData = {
 
   hero: {
     name: 'Simon Curran',
-    alias: 'SimoSultan',
+    alias: '@SimoSultan',
     tagline: 'Software Consultant',
     ariaLabel: 'Simon Curran hero card, press Enter to expand',
     avatarAlt: 'Portrait of Simon Curran made with CSS',
@@ -59,7 +59,7 @@ const portfolioData = {
         name: 'Portfolio V2',
         what: 'My most recent, but old, portfolio that was built during my studies to better understand React.',
         stack: ['React', 'MaterialUI', 'SASS'],
-        links: { github: 'https://github.com/SimoSultan/portfolio_v2', live: 'https://simoncurran.dev' },
+        links: { github: 'https://github.com/SimoSultan/portfolio_v2', live: 'https://simosultan2.netlify.app/' },
         maintained: false,
       },
       {
