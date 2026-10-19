@@ -1,6 +1,7 @@
 .grid {
   --cols: 1;
 
+  position: relative;
   display: grid;
   grid-template-columns: repeat(var(--cols), 1fr);
   grid-template-rows: repeat(var(--grid-rows), 1fr);
@@ -25,7 +26,11 @@
   padding: var(--card-padding);
   overflow: hidden;
   cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
   user-select: none;
+  -webkit-tap-highlight-color: transparent;
   container-type: inline-size;
   will-change: transform;
 }
@@ -42,6 +47,31 @@
 @media (min-width: 640px) {
   .grid {
     --cols: 2;
+  }
+}
+
+@media (max-width: 639px) and (orientation: landscape) {
+  .grid {
+    display: flex;
+    flex-direction: row;
+    gap: var(--gap);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    align-items: stretch;
+    grid-template-columns: none;
+    grid-template-rows: none;
+  }
+
+  .card {
+    flex: 1 0 180px;
+    min-width: 180px;
+    height: 100%;
+    scroll-snap-align: start;
+  }
+
+  .card[data-state="expanded"] {
+    flex: 3 0 55%;
+    min-width: 320px;
   }
 }
 

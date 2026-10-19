@@ -9,11 +9,14 @@
   let resizeTimeout;
   let lastBreakpoint = portfolioLayouts.getBreakpoint();
 
-  function applyCurrentLayout(animate = true) {
+  function applyCurrentLayout(animate = true, focusId = null, opts = {}) {
     const breakpoint = portfolioLayouts.getBreakpoint();
     const layout = portfolioLayouts.getLayoutForState(breakpoint, state);
     const grid = document.getElementById('grid');
-    portfolioLayouts.applyLayout(layout, grid, animate);
+    if (grid) {
+      grid.classList.toggle('has-expanded', state.expandedId !== null);
+    }
+    portfolioLayouts.applyLayout(layout, grid, animate, focusId, opts);
   }
 
   function updateStates() {
@@ -35,7 +38,7 @@
       state.currentLayout = portfolioLayouts.generateExpandedLayout(breakpoint, id, baseLayout);
     }
     updateStates();
-    applyCurrentLayout(true);
+    applyCurrentLayout(true, id);
   }
 
   function collapseCard(id) {
@@ -45,7 +48,7 @@
       state.smallId = null;
       state.currentLayout = null;
       updateStates();
-      applyCurrentLayout(true);
+      applyCurrentLayout(true, id);
     }
   }
 
@@ -93,17 +96,21 @@
       expandCard(card.id);
     });
 
-    portfolioResize.initResize(grid, state, () => applyCurrentLayout(true), updateStates);
+    portfolioResize.initResize(grid, state, (opts = { duration: 0.2, ease: 'power2.out', stagger: 0 }) => applyCurrentLayout(true, null, opts), updateStates);
+    
+    // For drag-resize, animate each snap step (no instant snaps)
+    portfolioResize.initResize(grid, state, (opts = { duration: 0.2, ease: 'power2.out', stagger: 0 }) => applyCurrentLayout(true, null, opts), updateStates);
 
     window.addEventListener('resize', () => {
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(() => {
         const breakpoint = portfolioLayouts.getBreakpoint();
-        if (breakpoint !== lastBreakpoint) {
+        const breakpointChanged = breakpoint !== lastBreakpoint;
+        if (breakpointChanged) {
           state.currentLayout = null;
           lastBreakpoint = breakpoint;
         }
-        applyCurrentLayout(false);
+        applyCurrentLayout(breakpointChanged);
       }, 150);
     });
   }

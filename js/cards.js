@@ -1,6 +1,6 @@
 function renderCloseIcon() {
   return `
-    <button class="card__close" data-action="close" aria-label="Close card">
+    <button class="card__close" data-action="close" aria-label="${portfolioData.meta.closeAriaLabel}">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
         <path d="M18 6L6 18M6 6l12 12" />
       </svg>
@@ -14,7 +14,7 @@ function renderResizeHandleContainer() {
 
 function renderHeroCard(data) {
   return `
-    <article class="card card--hero" id="hero" tabindex="0" role="button" aria-label="Simon Curran hero card, press Enter to expand">
+    <article class="card card--hero" id="hero" tabindex="0" role="button" aria-label="${data.ariaLabel}">
       ${renderCloseIcon()}
       ${renderResizeHandleContainer()}
       <div class="card__content">
@@ -23,13 +23,7 @@ function renderHeroCard(data) {
           <h1 class="card__title">${data.name}</h1>
           <span class="card__alias">${data.alias}</span>
         </div>
-        <img class="card__avatar" src="assets/avatar.png" alt="Portrait of Simon Curran" loading="lazy" />
-        <div class="card__graphic" aria-hidden="true">
-          <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
-            <circle cx="60" cy="60" r="40" fill="rgba(17,17,17,0.08)" />
-            <rect x="35" y="35" width="50" height="50" rx="12" fill="rgba(17,17,17,0.12)" />
-          </svg>
-        </div>
+        <img class="card__avatar" src="assets/avatar.png" alt="${data.avatarAlt}" loading="lazy" />
       </div>
     </article>
   `;
@@ -37,36 +31,28 @@ function renderHeroCard(data) {
 
 function renderAboutCard(data) {
   return `
-    <article class="card card--about" id="about" tabindex="0" role="button" aria-label="About me card, press Enter to expand">
+    <article class="card card--about" id="about" tabindex="0" role="button" aria-label="${data.ariaLabel}">
       ${renderCloseIcon()}
       ${renderResizeHandleContainer()}
       <div class="card__content">
-        <div>
+        <div class="card__text">
           <span class="card__label">${data.label}</span>
           <h2 class="card__title">${data.title}</h2>
           <p class="card__summary">${data.summary}</p>
           <div class="card__full">${data.full}</div>
-        </div>
-        <div class="card__actions">
-          <button class="card__btn" data-action="expand" aria-label="View more about Simon">
-            View more
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M7 17L17 7M17 7H7M17 7V17" />
-            </svg>
-          </button>
         </div>
       </div>
     </article>
   `;
 }
 
-function renderProjectItem(item) {
+function renderProjectItem(item, linkLabels, notMaintainedLabel) {
   const links = [];
   if (item.links?.github) {
-    links.push(`<a href="${item.links.github}" target="_blank" rel="noopener noreferrer">GitHub</a>`);
+    links.push(`<a href="${item.links.github}" target="_blank" rel="noopener noreferrer">${linkLabels.github}</a>`);
   }
   if (item.links?.live) {
-    links.push(`<a href="${item.links.live}" target="_blank" rel="noopener noreferrer">Live</a>`);
+    links.push(`<a href="${item.links.live}" target="_blank" rel="noopener noreferrer">${linkLabels.live}</a>`);
   }
   const linksHtml = links.length ? `<p class="card__meta">${links.join(' · ')}</p>` : '';
 
@@ -75,16 +61,13 @@ function renderProjectItem(item) {
     return `<span class="card__tag ${aiClass}">${s}</span>`;
   }).join('');
 
+  const maintainedBadge = item.maintained === false
+    ? `<span class="card__tag card__tag--unmaintained">${notMaintainedLabel}</span>`
+    : '';
+
   return `
     <li>
-      <div class="card__item-header">
-        <h4>${item.name}</h4>
-        <span class="card__item-arrow" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M5 12h14M12 5l7 7-7 7" />
-          </svg>
-        </span>
-      </div>
+      <h4>${item.name}${maintainedBadge}</h4>
       <p>${item.what}</p>
       <div class="card__tags">${tags}</div>
       ${linksHtml}
@@ -93,36 +76,23 @@ function renderProjectItem(item) {
 }
 
 function renderProjectsCard(data) {
-  const items = [...data.withoutAI, ...data.withAI].map(renderProjectItem).join('');
+  const items = [...data.withoutAI, ...data.withAI]
+    .map((item) => renderProjectItem(item, data.linkLabels, data.notMaintainedLabel))
+    .join('');
 
   return `
-    <article class="card card--projects" id="projects" tabindex="0" role="button" aria-label="Projects card, press Enter to expand">
+    <article class="card card--projects" id="projects" tabindex="0" role="button" aria-label="${data.ariaLabel}">
       ${renderCloseIcon()}
       ${renderResizeHandleContainer()}
       <div class="card__content">
-        <div>
+        <div class="card__text">
           <span class="card__label">${data.label}</span>
           <h2 class="card__title">${data.title}</h2>
           <p class="card__summary">${data.summary}</p>
-          <ul class="card__list" aria-label="Selected projects">
+          <ul class="card__list" aria-label="${data.listAriaLabel}">
             ${items}
           </ul>
         </div>
-        <div class="card__actions">
-          <button class="card__btn" data-action="expand" aria-label="View selected projects">
-            View projects
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M7 17L17 7M17 7H7M17 7V17" />
-            </svg>
-          </button>
-        </div>
-      </div>
-      <div class="card__graphic" aria-hidden="true">
-        <svg width="140" height="140" viewBox="0 0 140 140" fill="none">
-          <circle cx="100" cy="40" r="30" fill="rgba(255,255,255,0.35)" />
-          <rect x="20" y="80" width="80" height="28" rx="14" fill="rgba(17,17,17,0.9)" />
-          <circle cx="50" cy="110" r="40" fill="rgba(252,211,77,0.6)" />
-        </svg>
       </div>
     </article>
   `;
@@ -138,58 +108,58 @@ function renderExperienceCard(data) {
   `).join('');
 
   return `
-    <article class="card card--experience" id="experience" tabindex="0" role="button" aria-label="Work experience card, press Enter to expand">
+    <article class="card card--experience" id="experience" tabindex="0" role="button" aria-label="${data.ariaLabel}">
       ${renderCloseIcon()}
       ${renderResizeHandleContainer()}
       <div class="card__content">
-        <div>
+        <div class="card__text">
           <span class="card__label">${data.label}</span>
           <h2 class="card__title">${data.title}</h2>
           <p class="card__summary">${data.summary}</p>
-          <ul class="card__list" aria-label="Work history">
+          <ul class="card__list" aria-label="${data.listAriaLabel}">
             ${items}
           </ul>
         </div>
-        <div class="card__actions">
-          <button class="card__btn" data-action="expand" aria-label="View full work experience">
-            View full experience
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M7 17L17 7M17 7H7M17 7V17" />
-            </svg>
-          </button>
-        </div>
-      </div>
-      <div class="card__graphic" aria-hidden="true">
-        <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
-          <rect x="20" y="20" width="60" height="60" rx="16" fill="rgba(17,17,17,0.9)" transform="rotate(15 50 50)" />
-          <circle cx="90" cy="70" r="25" stroke="rgba(167,139,250,0.8)" stroke-width="12" fill="none" />
-        </svg>
       </div>
     </article>
   `;
 }
 
-function renderContactCard(data) {
+function renderContactAction(action, data) {
+  const href = action.key === 'email' ? `mailto:${data.email}` : data[action.key];
+  const externalAttrs = action.external ? 'target="_blank" rel="noopener noreferrer"' : '';
   return `
-    <article class="card card--contact" id="contact" tabindex="0" role="button" aria-label="Contact card, press Enter to expand">
+    <a class="card__btn" href="${href}" ${externalAttrs} data-action="contact" aria-label="${action.ariaLabel}">
+      ${action.label}
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M7 17L17 7M17 7H7M17 7V17" />
+      </svg>
+    </a>
+  `;
+}
+
+function renderContactCard(data) {
+  const fullHtml = data.fullText.replace(
+    /{{email}}/g,
+    `<a href="mailto:${data.email}">${data.email}</a>`,
+  );
+  const actionsHtml = data.actions.map((action) => renderContactAction(action, data)).join('');
+
+  return `
+    <article class="card card--contact" id="contact" tabindex="0" role="button" aria-label="${data.ariaLabel}">
       ${renderCloseIcon()}
       ${renderResizeHandleContainer()}
       <div class="card__content">
-        <div>
+        <div class="card__text">
           <span class="card__label">${data.label}</span>
           <h2 class="card__title">${data.title}</h2>
           <p class="card__summary">${data.summary}</p>
           <div class="card__full">
-            <p>Email me at <a href="mailto:${data.email}">${data.email}</a> or find me on <a href="${data.github}" target="_blank" rel="noopener noreferrer">GitHub</a>.</p>
+            <p>${fullHtml}</p>
           </div>
         </div>
         <div class="card__actions">
-          <a class="card__btn" href="mailto:${data.email}" data-action="contact" aria-label="Send Simon an email">
-            Email me
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M7 17L17 7M17 7H7M17 7V17" />
-            </svg>
-          </a>
+          ${actionsHtml}
         </div>
       </div>
     </article>
@@ -209,7 +179,112 @@ function renderGrid(containerId = 'grid') {
   ].join('');
 }
 
+const CONTENT_SELECTOR =
+  '.card__summary, .card__list, .card__full, .card__actions, .card__avatar, .card__graphic, .card__label, .card__alias';
+
+let pendingContentFlags = null;
+
+function contentKeyOf(el) {
+  if (el.classList.contains('card__summary')) return 'summary';
+  if (el.classList.contains('card__list')) return 'list';
+  if (el.classList.contains('card__full')) return 'full';
+  if (el.classList.contains('card__actions')) return 'actions';
+  if (el.classList.contains('card__avatar')) return 'avatar';
+  if (el.classList.contains('card__alias')) return 'alias';
+  if (el.classList.contains('card__label')) return 'label';
+  return 'graphic';
+}
+
+function isVisibleContent(el) {
+  const cs = getComputedStyle(el);
+  return {
+    visible: cs.display !== 'none' && parseFloat(cs.opacity) > 0.5,
+    opacity: parseFloat(cs.opacity),
+    height: el.offsetHeight,
+    display: cs.display,
+  };
+}
+
+function captureContentFlags() {
+  const flags = {};
+  document.querySelectorAll('.card').forEach((card) => {
+    const entry = {};
+    card.querySelectorAll(CONTENT_SELECTOR).forEach((el) => {
+      entry[contentKeyOf(el)] = isVisibleContent(el);
+    });
+    flags[card.id] = entry;
+  });
+  return flags;
+}
+
+function hasContentFlags() {
+  return pendingContentFlags !== null;
+}
+
+function consumeContentFlags() {
+  const flags = pendingContentFlags;
+  pendingContentFlags = null;
+  return flags;
+}
+
+function discardContentFlags() {
+  pendingContentFlags = null;
+}
+
+function clearContentInlineStyles(gridEl) {
+  if (!gridEl) return;
+  const props = ['height', 'opacity', 'transform', 'display', 'translate', 'rotate', 'scale'];
+  gridEl.querySelectorAll(CONTENT_SELECTOR).forEach((el) => {
+    props.forEach((prop) => el.style.removeProperty(prop));
+  });
+}
+
+function animateContentState(timeline, gridEl) {
+  const flags = consumeContentFlags();
+  if (!flags || !timeline || !gridEl) return false;
+
+  clearContentInlineStyles(gridEl);
+
+  let animated = false;
+
+  gridEl.querySelectorAll('.card').forEach((card) => {
+    const previous = flags[card.id];
+    if (!previous) return;
+
+    card.querySelectorAll(CONTENT_SELECTOR).forEach((el) => {
+      const key = contentKeyOf(el);
+      const before = previous[key];
+      if (!before) return;
+
+      const now = isVisibleContent(el);
+      if (before.visible === now.visible) return;
+
+      const isBox = key === 'avatar' || key === 'graphic';
+      animated = true;
+
+      if (now.visible) {
+        const from = isBox ? { opacity: 0, y: 12 } : { height: 0, opacity: 0, y: 12 };
+        const to = isBox
+          ? { opacity: now.opacity, y: 0, duration: 0.3, ease: 'power2.out' }
+          : { height: now.height, opacity: now.opacity, y: 0, duration: 0.38, ease: 'power2.out' };
+        timeline.fromTo(el, from, { ...to, immediateRender: true }, 0.08);
+      } else {
+        if (key === 'avatar') return;
+        if (isBox) el.style.display = before.display;
+        const from = isBox ? { opacity: before.opacity, y: 0 } : { height: before.height, opacity: before.opacity, y: 0 };
+        const to = isBox
+          ? { opacity: 0, y: 12, duration: 0.3, ease: 'power2.in' }
+          : { height: 0, opacity: 0, y: 12, duration: 0.3, ease: 'power2.in' };
+        timeline.fromTo(el, from, { ...to, immediateRender: true }, 0.06);
+      }
+    });
+  });
+
+  return animated;
+}
+
 function updateCardStates(state) {
+  pendingContentFlags = captureContentFlags();
   const cards = document.querySelectorAll('.card');
   cards.forEach((card) => {
     const id = card.id;
@@ -230,5 +305,10 @@ if (typeof window !== 'undefined') {
   window.portfolioCards = {
     renderGrid,
     updateCardStates,
+    hasContentFlags,
+    consumeContentFlags,
+    discardContentFlags,
+    clearContentInlineStyles,
+    animateContentState,
   };
 }

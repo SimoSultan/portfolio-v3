@@ -40,7 +40,9 @@ const snapSizes = ['resting', 'medium', 'expanded'];
 
 function getBreakpoint() {
   const w = window.innerWidth;
-  if (w < 640) return 'mobile';
+  const h = window.innerHeight;
+  const isLandscape = w > h;
+  if (w < 640 && !isLandscape) return 'mobile';
   if (w < 1024) return 'tablet';
   return 'desktop';
 }
@@ -325,8 +327,8 @@ function generateExpandedLayout(breakpoint, cardId, baseLayout = layouts[breakpo
     const layout = cloneLayout(layouts.mobile.resting);
     const order = ['hero', 'about', 'projects', 'experience', 'contact'];
     const index = order.indexOf(cardId);
-    layout[cardId] = { gc: 1, gcs: 1, gr: index + 1, grs: 2 };
-    let row = index + 3;
+    layout[cardId] = { gc: 1, gcs: 1, gr: index + 1, grs: 3 };
+    let row = index + 4;
     for (let i = index + 1; i < order.length; i++) {
       layout[order[i]] = { gc: 1, gcs: 1, gr: row, grs: 1 };
       row += 1;
@@ -352,8 +354,8 @@ function generateExpandedLayout(breakpoint, cardId, baseLayout = layouts[breakpo
     for (let i = 0; i < ids.length; i++) {
       const id = ids[i];
       if (i === index) {
-        layout[id] = { gc: 1, gcs: 2, gr: row, grs: 2 };
-        row += 2;
+        layout[id] = { gc: 1, gcs: 2, gr: row, grs: 3 };
+        row += 3;
       } else {
         layout[id] = { gc: 1, gcs: 2, gr: row, grs: 1 };
         row += 1;
@@ -531,48 +533,88 @@ function renderResizeHandles(layout) {
   }
 }
 
-function applyLayout(layout, gridEl, animate = true) {
+let flipTween = null;
+let flipFocusId = null;
+
+function clearFlipFocus() {
+  if (!flipFocusId) return;
+  const el = document.getElementById(flipFocusId);
+  if (el) el.style.removeProperty('z-index');
+  flipFocusId = null;
+}
+
+function completeRunningFlip() {
+  if (!flipTween) return;
+  const tween = flipTween;
+  flipTween = null;
+  tween.progress(1);
+}
+
+function finishFlip(gridEl, layout) {
+  flipTween = null;
+  clearFlipFocus();
+  if (gridEl) gridEl.classList.remove('is-animating');
+  if (typeof portfolioCards !== 'undefined') {
+    portfolioCards.clearContentInlineStyles(gridEl);
+  }
+  renderResizeHandles(layout);
+}
+
+function applyLayout(layout, gridEl, animate = true, focusId = null, opts = {}) {
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const useAnimation = animate && !prefersReducedMotion && typeof gsap !== 'undefined' && typeof Flip !== 'undefined';
+
+  completeRunningFlip();
+  clearFlipFocus();
+
+  let flipState = null;
+  if (useAnimation && gridEl) {
+    flipState = Flip.getState(gridEl.children);
+  }
 
   const maxRow = getMaxRow(layout);
   document.documentElement.style.setProperty('--grid-rows', maxRow);
 
-  if (useAnimation) {
-    const state = Flip.getState(gridEl.children);
-
-    for (const id in layout) {
-      const el = document.getElementById(id);
-      if (!el) continue;
-      const { gc, gcs, gr, grs } = layout[id];
-      el.style.setProperty('--gc', gc);
-      el.style.setProperty('--gcs', gcs);
-      el.style.setProperty('--gr', gr);
-      el.style.setProperty('--grs', grs);
-    }
-
-    Flip.from(state, {
-      duration: 0.55,
-      ease: 'power3.out',
-      stagger: 0.03,
-      absolute: true,
-      zIndex: 1,
-      onComplete: () => {
-        renderResizeHandles(layout);
-      },
-    });
-  } else {
-    for (const id in layout) {
-      const el = document.getElementById(id);
-      if (!el) continue;
-      const { gc, gcs, gr, grs } = layout[id];
-      el.style.setProperty('--gc', gc);
-      el.style.setProperty('--gcs', gcs);
-      el.style.setProperty('--gr', gr);
-      el.style.setProperty('--grs', grs);
-    }
-    renderResizeHandles(layout);
+  for (const id in layout) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    const { gc, gcs, gr, grs } = layout[id];
+    el.style.setProperty('--gc', gc);
+    el.style.setProperty('--gcs', gcs);
+    el.style.setProperty('--gr', gr);
+    el.style.setProperty('--grs', grs);
   }
+
+  if (!useAnimation) {
+    if (typeof portfolioCards !== 'undefined') portfolioCards.discardContentFlags();
+    finishFlip(gridEl, layout);
+    return;
+  }
+
+  const animateContent =
+    gridEl !== null && typeof portfolioCards !== 'undefined' && portfolioCards.hasContentFlags();
+  if (animateContent) gridEl.classList.add('is-animating');
+
+  const flip = Flip.from(flipState, {
+    duration: opts.duration ?? 0.45,
+    ease: opts.ease ?? 'power3.out',
+    stagger: opts.stagger !== undefined ? opts.stagger : { amount: 0.12 },
+    absolute: true,
+    prune: true,
+    onComplete: () => finishFlip(gridEl, layout),
+  });
+
+  if (focusId) {
+    const focusEl = document.getElementById(focusId);
+    if (focusEl) {
+      focusEl.style.zIndex = '3';
+      flipFocusId = focusId;
+    }
+  }
+
+  if (animateContent) portfolioCards.animateContentState(flip, gridEl);
+
+  flipTween = flip;
 }
 
 function getLayoutForState(breakpoint, cardState) {
