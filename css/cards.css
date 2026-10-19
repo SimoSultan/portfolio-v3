@@ -375,13 +375,13 @@
 }
 
 @media (min-width: 640px) {
-  .card__list li {
+  .card--projects .card__list li {
     flex-direction: row;
     align-items: flex-end;
     gap: 16px;
   }
 
-  .card__body {
+  .card--projects .card__body {
     flex: 1;
   }
 
