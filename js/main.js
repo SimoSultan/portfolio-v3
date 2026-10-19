@@ -97,9 +97,6 @@
     });
 
     portfolioResize.initResize(grid, state, (opts = { duration: 0.2, ease: 'power2.out', stagger: 0 }) => applyCurrentLayout(true, null, opts), updateStates);
-    
-    // For drag-resize, animate each snap step (no instant snaps)
-    portfolioResize.initResize(grid, state, (opts = { duration: 0.2, ease: 'power2.out', stagger: 0 }) => applyCurrentLayout(true, null, opts), updateStates);
 
     window.addEventListener('resize', () => {
       clearTimeout(resizeTimeout);
