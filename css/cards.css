@@ -132,13 +132,6 @@
   overflow: hidden;
 }
 
-.grid.is-animating .card__summary,
-.grid.is-animating .card__full,
-.grid.is-animating .card__actions,
-.grid.is-animating .card__list {
-  transition: none;
-}
-
 .card[data-state="resting"] .card__title,
 .card[data-state="small"] .card__title {
   opacity: 1;
@@ -156,6 +149,18 @@
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
+  overflow: visible;
+}
+
+/* During GSAP animations we need overflow hidden so content doesn't spill
+   while height/opacity are tweening. After the tween ends, the expanded rule
+   above restores overflow: visible for hover transforms etc. */
+.grid.is-animating .card__summary,
+.grid.is-animating .card__full,
+.grid.is-animating .card__actions,
+.grid.is-animating .card__list {
+  transition: none;
+  overflow: hidden;
 }
 
 /* Scrollable content wrapper */
@@ -179,7 +184,6 @@
 
 .card[data-state="expanded"] .card__content {
   overflow-y: auto;
-  overflow-x: hidden;
 }
 
 .card__content::-webkit-scrollbar {
@@ -357,7 +361,8 @@
 }
 
 .card__links .card__btn {
-  padding: 8px;
+  padding: 4px;
+  font-size: clamp(0.6rem, min(2.2cqw, 2.8cqh), 0.72rem);
 }
 
 .card__links .card__btn .btn-label {
@@ -385,7 +390,7 @@
   }
 
   .card__links .card__btn {
-    padding: 8px 16px;
+    padding: 4px 8px;
   }
 
   .card__links .card__btn .btn-label {
