@@ -10,10 +10,11 @@ An interactive, single-page bento-grid portfolio for Simon Curran (SimoSultan). 
 
 ## Run locally
 
-Serve the folder with any static file server, for example:
+Clone the repo and serve the folder with any static file server:
 
 ```bash
-cd projects/portfolio-v3
+git clone https://github.com/SimoSultan/portfolio-v3.git
+cd portfolio-v3
 python3 -m http.server 8000
 ```
 
