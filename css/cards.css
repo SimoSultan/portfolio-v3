@@ -621,3 +621,157 @@
     object-fit: contain;
   }
 }
+
+/* Mobile landscape accordion */
+.grid.layout--accordion .resize-handles,
+.grid.layout--accordion .card__close {
+  display: none;
+}
+
+.grid.layout--accordion .card {
+  padding: 8px;
+}
+
+.grid.layout--accordion .card[data-state="expanded"] {
+  padding: var(--card-padding);
+}
+
+.grid.layout--accordion .card:not([data-state="expanded"]) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.grid.layout--accordion .card:not([data-state="expanded"]) .card__content {
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 0;
+}
+
+.grid.layout--accordion .card:not([data-state="expanded"]) .card__text {
+  width: 100%;
+  height: 100%;
+}
+
+.card__accordion-label {
+  display: none;
+}
+
+.grid.layout--accordion .card:not([data-state="expanded"]) .card__label,
+.grid.layout--accordion .card:not([data-state="expanded"]) .card__title,
+.grid.layout--accordion .card:not([data-state="expanded"]) .card__summary,
+.grid.layout--accordion .card:not([data-state="expanded"]) .card__full,
+.grid.layout--accordion .card:not([data-state="expanded"]) .card__list,
+.grid.layout--accordion .card:not([data-state="expanded"]) .card__actions {
+  display: none;
+}
+
+.grid.layout--accordion .card:not([data-state="expanded"]) .card__accordion-label {
+  display: block;
+  align-self: center;
+  margin: auto 0;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  white-space: nowrap;
+  font-family: var(--font-head);
+  font-size: clamp(0.8rem, min(10cqw, 10cqh), 1rem);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+/* Expanded panel content */
+.grid.layout--accordion .card[data-state="expanded"] .card__content {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.grid.layout--accordion .card[data-state="expanded"] .card__title {
+  font-size: clamp(1.4rem, min(6cqw, 9cqh), 2.2rem);
+}
+
+/* Smooth content reveal in accordion mode */
+.grid.layout--accordion .card__summary,
+.grid.layout--accordion .card__full,
+.grid.layout--accordion .card__actions,
+.grid.layout--accordion .card__list {
+  height: auto;
+  max-height: 0;
+  transition: max-height 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              opacity 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.grid.layout--accordion .card[data-state="expanded"] .card__summary,
+.grid.layout--accordion .card[data-state="expanded"] .card__full,
+.grid.layout--accordion .card[data-state="expanded"] .card__actions,
+.grid.layout--accordion .card[data-state="expanded"] .card__list {
+  max-height: 100vh;
+}
+
+/* Hero in landscape accordion */
+.grid.layout--accordion .card--hero .card__content {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(16px, 4cqw, 32px);
+}
+
+.grid.layout--accordion .card--hero .card__text {
+  align-items: flex-start;
+  text-align: left;
+  height: auto;
+  flex: 0 0 50%;
+  max-width: 50%;
+  min-width: 0;
+  opacity: 1;
+  overflow: hidden;
+  transition: flex-basis 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              max-width 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              opacity 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.grid.layout--accordion .card--hero:not([data-state="expanded"]) .card__text {
+  flex: 0 0 0;
+  max-width: 0;
+  opacity: 0;
+}
+
+.grid.layout--accordion .card--hero .card__title {
+  font-size: clamp(3rem, min(22cqw, 28cqh), 10rem);
+  white-space: normal;
+  overflow: visible;
+  line-height: 0.95;
+}
+
+.grid.layout--accordion .card--hero .card__avatar {
+  display: block;
+  height: auto;
+  max-height: 100%;
+  width: auto;
+  max-width: 50%;
+  flex: 0 0 50%;
+  object-fit: contain;
+  margin-left: auto;
+  border-radius: var(--radius-sm);
+  transition: flex-basis 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              max-width 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              height 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              border-radius 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.grid.layout--accordion .card--hero:not([data-state="expanded"]) .card__avatar {
+  flex: 0 0 56px;
+  max-width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grid.layout--accordion {
+    transition: none;
+  }
+}

@@ -15,6 +15,7 @@ const portfolioData = {
   about: {
     label: 'Who am I',
     title: 'My Story',
+    accordionLabel: 'About',
     summary: 'Someone who is passionate about building solutions to solve problems.',
     full: 'Started as a self taught programmer, ended up in a bootcamp with a Certificate IV in IT, to leading a team of engineers to deliver products and features for Entain. With the presence of quality AI in society, I am able to use my limited time to get the ideas in my head into real hands. Piquing the interest of my community to now develop theirs.',
     ariaLabel: 'About me card, press Enter to expand',
@@ -23,6 +24,7 @@ const portfolioData = {
   projects: {
     label: 'Some old and new ideas',
     title: 'My Projects',
+    accordionLabel: 'Projects',
     summary: 'A mix of older builds and newer AI-assisted work.',
     ariaLabel: 'Projects card, press Enter to expand',
     listAriaLabel: 'Selected projects',
@@ -50,7 +52,7 @@ const portfolioData = {
         name: 'PPMv1',
         what: "Finds common artists and songs between friends' Spotify playlists and builds a new playlist from them, before Spotify made this a thing. Built during my studies for a competition, which resulted in first place. ",
         stack: ['HTML', 'CSS', 'Bootstrap', 'JavaScript'],
-        links: { live: 'https://spotify-party-playlist-maker.netlify.app/' },
+        links: { github: 'https://github.com/SimoSultan/spotify-party-playlist', live: 'https://spotify-party-playlist-maker.netlify.app/' },
         maintained: false,
       },
       {
@@ -73,7 +75,7 @@ const portfolioData = {
         name: 'Portfolio V3',
         what: 'An updated portfolio for my recent work — designed and built as an interactive bento-grid experience. Simple but fun was the goal.',
         stack: ['HTML', 'CSS', 'JavaScript', 'GSAP', 'AI-assisted'],
-        links: { github: 'https://github.com/SimoSultan/portfolio-v3', live: 'https://simoncurran.dev', reference: 'https://dribbble.com/shots/27779417-Strech-folio-explorations' },
+        links: { github: 'https://github.com/SimoSultan/portfolio-v3', live: 'https://simoncurran.dev' },
       },
     ],
   },
@@ -81,6 +83,7 @@ const portfolioData = {
   experience: {
     label: 'career / education / AI',
     title: 'Experience',
+    accordionLabel: 'Experience',
     summary: 'Self taught, coding bootcamp, to now a Senior Engineer within a product team.',
     ariaLabel: 'Work experience card, press Enter to expand',
     listAriaLabel: 'Work history',
@@ -98,7 +101,7 @@ const portfolioData = {
       {
         role: 'AI - Personal',
         period: 'May 2026 – Oct 2026',
-        detail: 'During my parental leave, when I had time, I built a home server for media, node networking, installed local LLM for local development which aided me to build out the software from this year.',
+        detail: 'During my parental leave, when I had time, I built a home server for media, node networking, installed local LLMs for personal development which aided me to build out the software from this year.',
       },
       {
         role: 'AI - Entain',
@@ -120,12 +123,23 @@ const portfolioData = {
         period: '2021 – 2022',
         detail: 'Started in a technical support rotation, moved into product teams, and rapidly upskilled in React Native and TypeScript.',
       },
+      {
+        role: 'Student',
+        period: '2021',
+        detail: 'Graduated Coder Academy bootcamp with a Certificate IV in IT.',
+      },
+      {
+        role: 'Student',
+        period: '2014',
+        detail: 'Graduated UQ with a Bachelor of Civil Engineering.',
+      },
     ],
   },
 
   contact: {
     label: 'Contact',
     title: "Let's Talk",
+    accordionLabel: 'Contact',
     summary: 'Have a project, role or idea? I would love to hear from you.',
     email: 'simosultan2020@gmail.com',
     github: 'https://github.com/SimoSultan',

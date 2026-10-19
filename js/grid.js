@@ -8,6 +8,15 @@ const layouts = {
       contact: { gc: 1, gcs: 1, gr: 5, grs: 1 },
     },
   },
+  mobileLandscape: {
+    resting: {
+      hero: { gc: 1, gcs: 1, gr: 1, grs: 1 },
+      about: { gc: 1, gcs: 1, gr: 1, grs: 1 },
+      projects: { gc: 1, gcs: 1, gr: 1, grs: 1 },
+      experience: { gc: 1, gcs: 1, gr: 1, grs: 1 },
+      contact: { gc: 1, gcs: 1, gr: 1, grs: 1 },
+    },
+  },
   tablet: {
     resting: {
       hero: { gc: 1, gcs: 2, gr: 1, grs: 1 },
@@ -43,6 +52,7 @@ function getBreakpoint() {
   const h = window.innerHeight;
   const isLandscape = w > h;
   if (w < 640 && !isLandscape) return 'mobile';
+  if (isLandscape && h < 600) return 'mobileLandscape';
   if (w < 1024) return 'tablet';
   return 'desktop';
 }
@@ -533,6 +543,40 @@ function renderResizeHandles(layout) {
   }
 }
 
+const ACCORDION_ORDER = ['hero', 'about', 'projects', 'experience', 'contact'];
+
+function applyAccordionLayout(gridEl, animate = true) {
+  gridEl.classList.add('layout--accordion');
+
+  const expandedCard = gridEl.querySelector('.card[data-state="expanded"]');
+  const activeIndex = expandedCard
+    ? ACCORDION_ORDER.indexOf(expandedCard.id)
+    : 0;
+
+  const collapsed = 84; // px
+  const gap = parseFloat(getComputedStyle(gridEl).gap) || 16;
+  const containerWidth = gridEl.getBoundingClientRect().width;
+  const isEndCard = activeIndex === 0 || activeIndex === ACCORDION_ORDER.length - 1;
+
+  // First/last card only has one neighbour peeking, middle cards have both.
+  const expanded = containerWidth - collapsed - gap - (isEndCard ? 0 : collapsed + gap);
+  // Slide so the active card sits between its neighbours (or at the start for the first card).
+  const translateX = activeIndex === 0 ? 0 : (activeIndex - 1) * (collapsed + gap);
+
+  gridEl.style.setProperty('--accordion-collapsed', `${collapsed}px`);
+  gridEl.style.setProperty('--accordion-expanded', `${expanded}px`);
+
+  if (animate) {
+    gridEl.style.setProperty('--accordion-translate', `${translateX}px`);
+  } else {
+    gridEl.classList.add('layout--accordion--no-transition');
+    gridEl.style.setProperty('--accordion-translate', `${translateX}px`);
+    // Force a reflow so the transition is disabled before the next frame removes the class.
+    void gridEl.offsetWidth;
+    gridEl.classList.remove('layout--accordion--no-transition');
+  }
+}
+
 let flipTween = null;
 let flipFocusId = null;
 
@@ -563,9 +607,40 @@ function finishFlip(gridEl, layout) {
 function applyLayout(layout, gridEl, animate = true, focusId = null, opts = {}) {
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const useAnimation = animate && !prefersReducedMotion && typeof gsap !== 'undefined' && typeof Flip !== 'undefined';
+  const isAccordion = gridEl && getBreakpoint() === 'mobileLandscape';
 
   completeRunningFlip();
   clearFlipFocus();
+
+  if (isAccordion) {
+    if (useAnimation && gridEl) {
+      const flipState = opts.flipState || Flip.getState(gridEl.children);
+
+      // Apply the new accordion layout instantly (no CSS transitions) so Flip can animate it.
+      gridEl.classList.add('layout--accordion--no-transition');
+      applyAccordionLayout(gridEl, false);
+      gridEl.classList.remove('layout--accordion--no-transition');
+
+      const flip = Flip.from(flipState, {
+        duration: opts.duration ?? 0.5,
+        ease: opts.ease ?? 'power3.out',
+        stagger: opts.stagger !== undefined ? opts.stagger : { amount: 0.1 },
+        absolute: true,
+        prune: true,
+        onComplete: () => finishFlip(gridEl, layout),
+      });
+
+      flipTween = flip;
+    } else {
+      if (gridEl) gridEl.classList.remove('layout--accordion');
+      if (typeof portfolioCards !== 'undefined') portfolioCards.discardContentFlags();
+      applyAccordionLayout(gridEl, animate);
+      finishFlip(gridEl, layout);
+    }
+    return;
+  }
+
+  if (gridEl) gridEl.classList.remove('layout--accordion');
 
   let flipState = null;
   if (useAnimation && gridEl) {
@@ -621,6 +696,9 @@ function getLayoutForState(breakpoint, cardState) {
   if (cardState.currentLayout) {
     return cloneLayout(cardState.currentLayout);
   }
+  if (breakpoint === 'mobileLandscape') {
+    return cloneLayout(layouts.mobileLandscape.resting);
+  }
   const { expandedId, mediumId, smallId } = cardState;
   if (expandedId) return generateExpandedLayout(breakpoint, expandedId);
   if (mediumId) return generateMediumLayout(breakpoint, mediumId);
@@ -668,6 +746,7 @@ if (typeof window !== 'undefined') {
     getCardSize,
     setCardSize,
     applyLayout,
+    completeRunningFlip,
     generateExpandedLayout,
     generateMediumLayout,
     generateSmallLayout,

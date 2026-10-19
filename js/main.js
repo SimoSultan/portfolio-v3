@@ -23,32 +23,46 @@
     portfolioCards.updateCardStates(state);
   }
 
+  function captureAccordionFlipState() {
+    const grid = document.getElementById('grid');
+    if (!grid || typeof Flip === 'undefined') return null;
+    portfolioLayouts.completeRunningFlip();
+    return Flip.getState(grid.children);
+  }
+
   function expandCard(id) {
     const breakpoint = portfolioLayouts.getBreakpoint();
+    let flipState = null;
+
     if (state.expandedId === id) {
+      // In landscape accordion mode we always want one panel expanded.
+      if (breakpoint === 'mobileLandscape') return;
+      flipState = captureAccordionFlipState();
       state.expandedId = null;
       state.mediumId = null;
       state.smallId = null;
       state.currentLayout = null;
     } else {
       const baseLayout = portfolioLayouts.getLayoutForState(breakpoint, state);
+      flipState = captureAccordionFlipState();
       state.expandedId = id;
       state.mediumId = null;
       state.smallId = null;
       state.currentLayout = portfolioLayouts.generateExpandedLayout(breakpoint, id, baseLayout);
     }
     updateStates();
-    applyCurrentLayout(true, id);
+    applyCurrentLayout(true, id, { flipState });
   }
 
   function collapseCard(id) {
     if (state.expandedId === id || state.mediumId === id || state.smallId === id) {
+      const flipState = captureAccordionFlipState();
       state.expandedId = null;
       state.mediumId = null;
       state.smallId = null;
       state.currentLayout = null;
       updateStates();
-      applyCurrentLayout(true, id);
+      applyCurrentLayout(true, id, { flipState });
     }
   }
 
@@ -106,6 +120,10 @@
         if (breakpointChanged) {
           state.currentLayout = null;
           lastBreakpoint = breakpoint;
+          if (breakpoint === 'mobileLandscape' && !state.expandedId) {
+            state.expandedId = 'hero';
+            updateStates();
+          }
         }
         applyCurrentLayout(breakpointChanged);
       }, 150);
@@ -114,6 +132,9 @@
 
   function init() {
     portfolioCards.renderGrid();
+    if (portfolioLayouts.getBreakpoint() === 'mobileLandscape' && !state.expandedId) {
+      state.expandedId = 'hero';
+    }
     updateStates();
     applyCurrentLayout(false);
     initEvents();

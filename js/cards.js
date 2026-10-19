@@ -31,13 +31,14 @@ function renderHeroCard(data) {
 
 function renderAboutCard(data) {
   return `
-    <article class="card card--about" id="about" tabindex="0" role="button" aria-label="${data.ariaLabel}">
+    <article class="card card--about" id="about" tabindex="0" role="button" aria-label="About me card, press Enter to expand">
       ${renderCloseIcon()}
       ${renderResizeHandleContainer()}
       <div class="card__content">
         <div class="card__text">
           <span class="card__label">${data.label}</span>
           <h2 class="card__title">${data.title}</h2>
+          <span class="card__accordion-label" aria-hidden="true">${data.accordionLabel}</span>
           <p class="card__summary">${data.summary}</p>
           <div class="card__full">${data.full}</div>
         </div>
@@ -107,6 +108,7 @@ function renderProjectsCard(data) {
         <div class="card__text">
           <span class="card__label">${data.label}</span>
           <h2 class="card__title">${data.title}</h2>
+          <span class="card__accordion-label" aria-hidden="true">${data.accordionLabel}</span>
           <p class="card__summary">${data.summary}</p>
           <ul class="card__list" aria-label="${data.listAriaLabel}">
             ${items}
@@ -127,15 +129,16 @@ function renderExperienceCard(data) {
   `).join('');
 
   return `
-    <article class="card card--experience" id="experience" tabindex="0" role="button" aria-label="${data.ariaLabel}">
+    <article class="card card--experience" id="experience" tabindex="0" role="button" aria-label="Work experience card, press Enter to expand">
       ${renderCloseIcon()}
       ${renderResizeHandleContainer()}
       <div class="card__content">
         <div class="card__text">
           <span class="card__label">${data.label}</span>
           <h2 class="card__title">${data.title}</h2>
+          <span class="card__accordion-label" aria-hidden="true">${data.accordionLabel}</span>
           <p class="card__summary">${data.summary}</p>
-          <ul class="card__list" aria-label="${data.listAriaLabel}">
+          <ul class="card__list" aria-label="Work history">
             ${items}
           </ul>
         </div>
@@ -172,6 +175,7 @@ function renderContactCard(data) {
         <div class="card__text">
           <span class="card__label">${data.label}</span>
           <h2 class="card__title">${data.title}</h2>
+          <span class="card__accordion-label" aria-hidden="true">${data.accordionLabel}</span>
           <p class="card__summary">${data.summary}</p>
           <div class="card__full">
             <p>${fullHtml}</p>
