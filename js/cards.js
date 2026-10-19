@@ -97,6 +97,7 @@ function renderProjectItem(item, linkLabels, notMaintainedLabel) {
 
 function renderProjectsCard(data) {
   const items = [...data.withoutAI, ...data.withAI]
+    .reverse()
     .map((item) => renderProjectItem(item, data.linkLabels, data.notMaintainedLabel))
     .join('');
 
@@ -150,12 +151,13 @@ function renderExperienceCard(data) {
 function renderContactAction(action, data) {
   const href = action.key === 'email' ? `mailto:${data.email}` : data[action.key];
   const externalAttrs = action.external ? 'target="_blank" rel="noopener noreferrer"' : '';
+  const iconSvg = action.key === 'email'
+    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M22 6l-10 7L2 6" /></svg>`
+    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17L17 7M17 7H7M17 7V17" /></svg>`;
   return `
     <a class="card__btn" href="${href}" ${externalAttrs} data-action="contact" aria-label="${action.ariaLabel}">
       ${action.label}
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <path d="M7 17L17 7M17 7H7M17 7V17" />
-      </svg>
+      ${iconSvg}
     </a>
   `;
 }

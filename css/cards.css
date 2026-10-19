@@ -615,10 +615,24 @@
 
   .card--hero[data-state="expanded"] .card__avatar {
     display: block;
-    width: clamp(80px, min(35cqw, 35cqh), 160px);
-    max-height: 45%;
+    width: clamp(120px, min(50cqw, 50cqh), 220px);
+    max-height: 55%;
     flex: 1 1 auto;
     object-fit: contain;
+    align-self: center;
+  }
+
+  .card__list h4 {
+    font-size: clamp(0.95rem, min(4.2cqw, 5cqh), 1.1rem);
+  }
+
+  .card__list p,
+  .card__body {
+    font-size: clamp(0.85rem, min(3.6cqw, 4.5cqh), 1rem);
+  }
+
+  .card__meta {
+    font-size: clamp(0.75rem, min(2.8cqw, 3.5cqh), 0.85rem);
   }
 }
 
