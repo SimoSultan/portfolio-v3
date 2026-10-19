@@ -29,6 +29,7 @@ const portfolioData = {
     linkLabels: {
       github: 'GitHub',
       live: 'Live',
+      reference: 'Reference',
     },
     notMaintainedLabel: 'Not maintained',
     withoutAI: [

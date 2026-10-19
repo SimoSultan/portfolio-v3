@@ -294,7 +294,11 @@
 
 .card__list li {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   padding-left: 24px;
+  padding-bottom: 12px;
   border-bottom: 1px solid rgba(17, 17, 17, 0.1);
   transition: transform var(--transition-bounce);
 }
@@ -328,8 +332,11 @@
 }
 
 .card__list h4 {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
   font-size: clamp(0.8rem, min(3.5cqw, 4.5cqh), 0.95rem);
-  margin-bottom: 2px;
 }
 
 .card__list p {
@@ -337,10 +344,53 @@
   opacity: 0.85;
 }
 
+.card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.card__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.card__links .card__btn {
+  padding: 8px;
+}
+
+.card__links .card__btn .btn-label {
+  display: none;
+}
+
 .card__meta {
   font-size: clamp(0.65rem, min(2.2cqw, 2.8cqh), 0.75rem);
   opacity: 0.7;
-  margin-top: 4px;
+}
+
+@media (min-width: 640px) {
+  .card__list li {
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 16px;
+  }
+
+  .card__body {
+    flex: 1;
+  }
+
+  .card__links {
+    flex-shrink: 0;
+  }
+
+  .card__links .card__btn {
+    padding: 8px 16px;
+  }
+
+  .card__links .card__btn .btn-label {
+    display: inline;
+  }
 }
 
 .card__tags {

@@ -46,15 +46,29 @@ function renderAboutCard(data) {
   `;
 }
 
+function renderProjectLink(link) {
+  return `
+    <a class="card__btn" href="${link.href}" target="_blank" rel="noopener noreferrer" aria-label="${link.label}">
+      <span class="btn-label">${link.label}</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M7 17L17 7M17 7H7M17 7V17" />
+      </svg>
+    </a>
+  `;
+}
+
 function renderProjectItem(item, linkLabels, notMaintainedLabel) {
-  const links = [];
+  const linkDefs = [];
   if (item.links?.github) {
-    links.push(`<a href="${item.links.github}" target="_blank" rel="noopener noreferrer">${linkLabels.github}</a>`);
+    linkDefs.push({ label: linkLabels.github, href: item.links.github });
   }
   if (item.links?.live) {
-    links.push(`<a href="${item.links.live}" target="_blank" rel="noopener noreferrer">${linkLabels.live}</a>`);
+    linkDefs.push({ label: linkLabels.live, href: item.links.live });
   }
-  const linksHtml = links.length ? `<p class="card__meta">${links.join(' · ')}</p>` : '';
+  if (item.links?.reference) {
+    linkDefs.push({ label: linkLabels.reference, href: item.links.reference });
+  }
+  const linksHtml = linkDefs.map(renderProjectLink).join('');
 
   const tags = item.stack.map((s) => {
     const aiClass = s.toLowerCase() === 'ai-assisted' ? 'card__tag--ai' : '';
@@ -67,10 +81,12 @@ function renderProjectItem(item, linkLabels, notMaintainedLabel) {
 
   return `
     <li>
-      <h4>${item.name}${maintainedBadge}</h4>
-      <p>${item.what}</p>
-      <div class="card__tags">${tags}</div>
-      ${linksHtml}
+      <div class="card__body">
+        <h4>${item.name}${maintainedBadge}</h4>
+        <p>${item.what}</p>
+        <div class="card__tags">${tags}</div>
+      </div>
+      ${linksHtml ? `<div class="card__links">${linksHtml}</div>` : ''}
     </li>
   `;
 }
