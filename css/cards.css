@@ -425,6 +425,11 @@
   font-style: italic;
 }
 
+.card__btn .card__tag--unmaintained {
+  background: rgba(244, 241, 234, 0.25);
+  color: inherit;
+}
+
 /* Resize handles */
 .resize-handle {
   position: absolute;
