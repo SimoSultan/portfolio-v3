@@ -35,7 +35,6 @@ const portfolioData = {
             reference: "Reference",
         },
         notMaintainedLabel: "Not maintained",
-        privateLabel: "Private",
         list: [
             {
                 name: "XLR8 Booking System",
