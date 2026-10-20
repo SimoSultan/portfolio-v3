@@ -35,7 +35,8 @@ const portfolioData = {
             reference: "Reference",
         },
         notMaintainedLabel: "Not maintained",
-        withoutAI: [
+        privateLabel: "Private",
+        list: [
             {
                 name: "XLR8 Booking System",
                 what: "A booking and admin system for my driving school business — the first thing I ever built, and from scratch. But knowing what I do now, I am very happy this never saw the light of day!",
@@ -82,8 +83,6 @@ const portfolioData = {
                 },
                 maintained: false,
             },
-        ],
-        withAI: [
             {
                 name: "Home Server",
                 what: "My first foray into building a home server network. Took an old Windows Mini PC and converted it to a headless Ubuntu server running docker containers. Handling my media, privately built apps, local LLMs all via remote networking.",
