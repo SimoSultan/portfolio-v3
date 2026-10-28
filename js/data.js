@@ -18,7 +18,7 @@ const portfolioData = {
         accordionLabel: "About",
         summary:
             "Someone who is passionate about building solutions to solve problems.",
-        full: "Started as a self taught programmer, ended up in a bootcamp with a Certificate IV in IT, to leading a team of engineers to deliver products and features for Entain. With the presence of quality AI in society, I am able to use my limited time to get the ideas in my head into real hands. Piquing the interest of my community to now develop theirs.",
+        full: "<p>It started out of curiosity — teaching myself to code just to see if I could build things. That curiosity led me to a coding bootcamp, where I graduated with a Certificate IV in IT and started as an intern.</p><p>From there, I worked my way up through the ranks — taking on more responsibility, leading a team of engineers, building reusable design systems, and mentoring others to grow into confident engineers.</p><p>Over time, my focus shifted towards AI. Building out a home server packed with local LLMs during parental leave gave me a new way to multiply my impact. With AI as a collaborator, I can take ideas from my head and ship them into the world faster than ever before.</p><p>Now as a Software & AI Consultant, I get to do that for others too — building web and native apps, wiring up local AI solutions, and helping businesses turn rough ideas into real, working products. Still just a problem solver at heart, only now with a much bigger toolbox.</p>",
         ariaLabel: "About me card, press Enter to expand",
     },
 

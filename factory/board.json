@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "repo": "portfolio-v3",
+  "stack": {
+    "lang": "unknown",
+    "framework": "unknown",
+    "packageManager": "unknown",
+    "testCmd": "echo 'no tests'",
+    "lintCmd": "echo 'no lint'",
+    "typecheckCmd": "echo 'no typecheck'"
+  },
+  "features": {}
+}

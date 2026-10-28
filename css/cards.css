@@ -257,6 +257,22 @@
   color: rgba(17, 17, 17, 0.85);
 }
 
+.card--about .card__full {
+  font-family: var(--font-story);
+  font-size: clamp(0.9rem, min(3.6cqw, 4.5cqh), 1.05rem);
+  line-height: 1.75;
+  letter-spacing: -0.01em;
+  color: rgba(17, 17, 17, 0.92);
+  hyphens: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.card--about .card__full p {
+  margin: 0;
+}
+
 .card--projects {
   background: var(--card-coral);
   color: var(--text);
